@@ -99,5 +99,21 @@ object Main extends App {
 
   assert(List.zipMap2(List(1, 2, 3, 4), List(4, 5, 6))(_ + _) == List(5, 7, 9))
 
+  assert(List.hasSubsequence(Nil, Nil))
+
+  assert(List.hasSubsequence(List(1), Nil))
+  assert(List.hasSubsequence(List(1, 2, 3), Nil))
+
+  assert(List.hasSubsequence(List(1, 2, 3), List(1)))
+  assert(List.hasSubsequence(List(1, 2, 3), List(2)))
+  assert(List.hasSubsequence(List(1, 2, 3), List(3)))
+  assert(List.hasSubsequence(List(1, 2, 3), List(1, 2)))
+  assert(List.hasSubsequence(List(1, 2, 3), List(2, 3)))
+  assert(List.hasSubsequence(List(1, 2, 3), List(1, 2, 3)))
+
+  assert(!List.hasSubsequence(List(1, 2, 3), List(1, 2, 3, 4)))
+  assert(!List.hasSubsequence(List(1, 2, 3), List(1, 3)))
+  assert(!List.hasSubsequence(Nil, List(1, 3)))
+
 
 }

@@ -172,4 +172,17 @@ object List {
       case (Cons(a, as), Cons(b, bs)) => Cons(f(a, b), zipMap2(as, bs)(f))
     }
 
+  // ex 24 (hard)
+  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
+    @tailrec def has(l1: List[A], l2: List[A], result: Boolean, started: Boolean): Boolean = (l1, l2) match {
+      case (_, Nil) => result
+      case (Nil, _) => false
+      case (Cons(x, xs), Cons(y, ys)) if x == y => has(xs, ys, true, true)
+      case (Cons(x, xs), Cons(y, ys)) if started => false
+      case (Cons(x, xs), Cons(y, ys)) => has(xs, l2, false, false)
+    }
+    has(l, sub, true, false)
+  }
+
+
 }
