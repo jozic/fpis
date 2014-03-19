@@ -116,4 +116,10 @@ object Main extends App {
   assert(!List.hasSubsequence(Nil, List(1, 3)))
 
 
+
+  assert(Tree.size(Leaf(1)) == 1)
+  assert(Tree.size(Branch(Leaf(1), Leaf(2))) == 3)
+  assert(Tree.size(Branch(Branch(Leaf(1), Leaf(3)), Leaf(2))) == 5)
+
+
 }
