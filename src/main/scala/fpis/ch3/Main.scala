@@ -121,5 +121,37 @@ object Main extends App {
   assert(Tree.size(Branch(Leaf(1), Leaf(2))) == 3)
   assert(Tree.size(Branch(Branch(Leaf(1), Leaf(3)), Leaf(2))) == 5)
 
+  assert(Tree.maximum(Leaf(1)) == 1)
+  assert(Tree.maximum(Leaf(-5)) == -5)
+  assert(Tree.maximum(Branch(Leaf(1), Leaf(2))) == 2)
+  assert(Tree.maximum(Branch(Branch(Leaf(1), Leaf(-4)), Branch(Leaf(2), Leaf(3)))) == 3)
+
+  assert(Tree.depth(Leaf(1)) == 1)
+  assert(Tree.depth(Branch(Leaf(1), Leaf(2))) == 2)
+  assert(Tree.depth(Branch(Branch(Leaf(1), Leaf(-4)), Branch(Leaf(2), Leaf(3)))) == 3)
+  assert(Tree.depth(Branch(Branch(Leaf(1), Branch(Leaf(1), Leaf(4))), Branch(Leaf(2), Leaf(3)))) == 4)
+
+  val f = (i: Int) => i + 1
+  assert(Tree.map(Leaf(1))(f) == Leaf(2))
+  assert(Tree.map(Branch(Leaf(1), Leaf(2)))(f) == Branch(Leaf(2), Leaf(3)))
+  assert(Tree.map(Branch(Branch(Leaf(1), Leaf(-4)), Branch(Leaf(2), Leaf(3))))(f) == Branch(Branch(Leaf(2), Leaf(-3)), Branch(Leaf(3), Leaf(4))))
+
+  assert(Tree.sizeFold(Leaf(1)) == 1)
+  assert(Tree.sizeFold(Branch(Leaf(1), Leaf(2))) == 3)
+  assert(Tree.sizeFold(Branch(Branch(Leaf(1), Leaf(3)), Leaf(2))) == 5)
+
+  assert(Tree.maximumFold(Leaf(1)) == 1)
+  assert(Tree.maximumFold(Leaf(-5)) == -5)
+  assert(Tree.maximumFold(Branch(Leaf(1), Leaf(2))) == 2)
+  assert(Tree.maximumFold(Branch(Branch(Leaf(1), Leaf(-4)), Branch(Leaf(2), Leaf(3)))) == 3)
+
+  assert(Tree.depthFold(Leaf(1)) == 1)
+  assert(Tree.depthFold(Branch(Leaf(1), Leaf(2))) == 2)
+  assert(Tree.depthFold(Branch(Branch(Leaf(1), Leaf(-4)), Branch(Leaf(2), Leaf(3)))) == 3)
+  assert(Tree.depthFold(Branch(Branch(Leaf(1), Branch(Leaf(1), Leaf(4))), Branch(Leaf(2), Leaf(3)))) == 4)
+
+  assert(Tree.mapFold(Leaf(1))(f) == Leaf(2))
+  assert(Tree.mapFold(Branch(Leaf(1), Leaf(2)))(f) == Branch(Leaf(2), Leaf(3)))
+  assert(Tree.mapFold(Branch(Branch(Leaf(1), Leaf(-4)), Branch(Leaf(2), Leaf(3))))(f) == Branch(Branch(Leaf(2), Leaf(-3)), Branch(Leaf(3), Leaf(4))))
 
 }
