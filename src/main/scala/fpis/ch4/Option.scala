@@ -9,10 +9,7 @@ sealed trait Option[+A] {
   }
 
   // ex 1
-  def flatMap[B](f: A => Option[B]): Option[B] = this match {
-    case Some(a) => f(a)
-    case _ => None
-  }
+  def flatMap[B](f: A => Option[B]): Option[B] = map(f).getOrElse(None)
 
   // ex 1
   def getOrElse[B >: A](default: => B): B = this match {
@@ -21,16 +18,11 @@ sealed trait Option[+A] {
   }
 
   // ex 1
-  def orElse[B >: A](ob: => Option[B]): Option[B] = this match {
-    case Some(a) => Some[B](a)
-    case None => ob
-  }
+  def orElse[B >: A](ob: => Option[B]): Option[B] = map(Some[B]).getOrElse(ob)
 
   // ex 1
-  def filter(f: A => Boolean): Option[A] = this match {
-    case Some(a) if f(a) => this
-    case _ => None
-  }
+  def filter(f: A => Boolean): Option[A] =
+    flatMap(a => if (f(a)) Some(a) else None)
 
 }
 
