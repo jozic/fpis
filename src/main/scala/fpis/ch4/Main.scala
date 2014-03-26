@@ -21,4 +21,7 @@ object Main extends App {
   assert(opt("").filter(_.isEmpty) == Some(""))
   assert(opt("q").filter(_.isEmpty) == None)
 
+  assert(Options.mean(Seq(1, 2, 3, 4)) == Some(2.5))
+  assert(Options.variance(Seq(1, 2, 3, 4)) == Some(1.25))
+
 }
