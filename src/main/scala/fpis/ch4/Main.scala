@@ -35,4 +35,20 @@ object Main extends App {
   assert(Options.sequence(List(some(1), some(2), some(3))) == Some(List(1, 2, 3)))
   assert(Options.sequence(List(some(1), some(2), some(3), none[Int])) == None)
 
+  assert(Options.traverse0(Nil)(identity) == Some(Nil))
+  assert(Options.traverse0(List(1))(a => some(a.toString)) == Some(List("1")))
+  assert(Options.traverse0(List(1, 2, 3))(a => some(a.toString)) == Some(List("1", "2", "3")))
+  assert(Options.traverse0(List(1, 2, 3))(a => if (a == 3) none[String] else some(a.toString)) == None)
+
+  assert(Options.traverse(Nil)(identity) == Some(Nil))
+  assert(Options.traverse(List(1))(a => some(a.toString)) == Some(List("1")))
+  assert(Options.traverse(List(1, 2, 3))(a => some(a.toString)) == Some(List("1", "2", "3")))
+  assert(Options.traverse(List(1, 2, 3))(a => if (a == 3) none[String] else some(a.toString)) == None)
+
+  assert(Options.sequenceViaTraverse(Nil) == Some(Nil))
+  assert(Options.sequenceViaTraverse(List(some(1))) == Some(List(1)))
+  assert(Options.sequenceViaTraverse(List(some(1), some(2), some(3))) == Some(List(1, 2, 3)))
+  assert(Options.sequenceViaTraverse(List(some(1), some(2), some(3), none[Int])) == None)
+
+
 }

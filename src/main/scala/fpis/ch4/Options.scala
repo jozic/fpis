@@ -23,4 +23,18 @@ object Options {
     case _ => None
   }
 
+  // ex 5
+  def traverse0[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sequence(a.map(f))
+
+  // ex 5
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a.foldRight(Some(List[B]()): Option[List[B]]) {
+      case (aa, Some(l)) => f(aa).map(_ :: l)
+      case _ => None
+    }
+
+  // ex 5
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(identity)
+
+
 }
