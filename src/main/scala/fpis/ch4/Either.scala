@@ -24,7 +24,6 @@ sealed trait Either[+E, +A] {
     case Right(a) => rf(a)
     case Left(e) => lf(e)
   }
-
 }
 
 case class Left[+E](value: E) extends Either[E, Nothing]
@@ -36,4 +35,14 @@ object Either {
   def left[E, A](e: E): Either[E, A] = Left(e)
 
   def right[E, A](a: A): Either[E, A] = Right(a)
+
+  // ex 7
+  def sequence[E, A](a: List[Either[E, A]]): Either[E, List[A]] = traverse(a)(identity)
+
+  // ex 7
+  def traverse[E, A, B](a: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    a.foldRight(right[E, List[B]](Nil)) {
+      case (aa, e) => f(aa).map2(e)(_ :: _)
+    }
+
 }

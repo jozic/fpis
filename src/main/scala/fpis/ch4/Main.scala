@@ -64,5 +64,15 @@ object Main extends App {
   assert(left[String, Int]("no").map2(right[Int, String]("2"))(_ + _.toInt) == Left("no"))
   assert(right[String, Int](1).map2(left[Int, String](0))(_ + _.toInt) == Left(0))
 
+  assert(Either.sequence(Nil) == Right(Nil))
+  assert(Either.sequence(List(right(1))) == Right(List(1)))
+  assert(Either.sequence(List(right(1), right(2), right(3))) == Right(List(1, 2, 3)))
+  assert(Either.sequence(List(right(1), right(2), right(3), left("no"))) == Left("no"))
+
+  assert(Either.traverse(Nil)(identity) == Right(Nil))
+  assert(Either.traverse(List(1))(a => right(a.toString)) == Right(List("1")))
+  assert(Either.traverse(List(1, 2, 3))(a => right(a.toString)) == Right(List("1", "2", "3")))
+  assert(Either.traverse(List(1, 2, 3))(a => if (a == 3) left("no") else right(a.toString)) == Left("no"))
+
 
 }
