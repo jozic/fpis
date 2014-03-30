@@ -1,10 +1,9 @@
 package fpis.ch4
 
+import Option._
+import Either._
+
 object Main extends App {
-
-  def some[A](a: A): Option[A] = Some(a)
-
-  def none[A]: Option[A] = None
 
   assert(some("1").map(_.toInt) == Some(1))
   assert(none[String].map(_.toInt) == None)
@@ -49,6 +48,21 @@ object Main extends App {
   assert(Options.sequenceViaTraverse(List(some(1))) == Some(List(1)))
   assert(Options.sequenceViaTraverse(List(some(1), some(2), some(3))) == Some(List(1, 2, 3)))
   assert(Options.sequenceViaTraverse(List(some(1), some(2), some(3), none[Int])) == None)
+
+
+  assert(right[String, Int](1).map(_ + 1) == Right(2))
+  assert(left[String, Int]("no").map(_ + 1) == Left("no"))
+
+  assert(right(1).flatMap(x => Right(x + 1)) == Right(2))
+  assert(right("1").flatMap(_ => Left("no")) == Left("no"))
+  assert(left[String, Int]("no").flatMap(x => Right(x + 1)) == Left("no"))
+
+  assert(right(1).orElse(right(0)) == Right(1))
+  assert(left[String, Int]("no").orElse(right(0)) == Right(0))
+
+  assert(right[String, Int](1).map2(right[Int, String]("2"))(_ + _.toInt) == Right(3))
+  assert(left[String, Int]("no").map2(right[Int, String]("2"))(_ + _.toInt) == Left("no"))
+  assert(right[String, Int](1).map2(left[Int, String](0))(_ + _.toInt) == Left(0))
 
 
 }
