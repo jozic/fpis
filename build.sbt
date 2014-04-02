@@ -4,4 +4,4 @@ version := "1.0"
 
 scalaVersion := "2.10.4"
 
-scalacOptions := Seq("-deprecation", "-unchecked", "-Xfatal-warnings")
+scalacOptions := Seq("-deprecation", "-unchecked", "-Xlint", "-Xfatal-warnings")
