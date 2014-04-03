@@ -29,6 +29,22 @@ sealed abstract class Stream[+A] {
     case _ => Empty
   }
 
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = uncons match {
+    case Some(c) => f(c.head, c.tail.foldRight(z)(f))
+    case None => z
+  }
+
+  def exists(p: A => Boolean): Boolean = foldRight(false)((a, b) => p(a) || b)
+
+  // ex 4
+  def forAll(p: A => Boolean): Boolean = foldRight(true)((a, b) => p(a) && b)
+
+  // ex 5
+  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A]) {
+    (a, b) => if (p(a)) cons(a, b) else b
+  }
+
+
 }
 
 object Empty extends Stream[Nothing] {
