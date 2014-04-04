@@ -3,7 +3,11 @@ package fpis.ch5
 import Stream._
 
 sealed abstract class Stream[+A] {
-  def uncons: Option[Cons[A]]
+
+  // ex 6
+  def uncons: Option[Cons[A]] = foldRight(None: Option[Cons[A]]) {
+    (a, b) => Option(cons(a, b.getOrElse(empty[A])).asInstanceOf[Cons[A]])
+  }
 
   def isEmpty: Boolean = uncons.isEmpty
 
@@ -29,7 +33,9 @@ sealed abstract class Stream[+A] {
     case _ => Empty
   }
 
-  def foldRight[B](z: => B)(f: (A, => B) => B): B = uncons match {
+  def foldRight[B](z: => B)(f: (A, => B) => B): B
+
+  def foldRight0[B](z: => B)(f: (A, => B) => B): B = uncons match {
     case Some(c) => f(c.head, c.tail.foldRight(z)(f))
     case None => z
   }
@@ -43,12 +49,11 @@ sealed abstract class Stream[+A] {
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A]) {
     (a, b) => if (p(a)) cons(a, b) else b
   }
-
-
 }
 
 object Empty extends Stream[Nothing] {
-  val uncons = None
+  // ex 6
+  def foldRight[B](z: => B)(f: (Nothing, => B) => B) = z
 }
 
 sealed abstract class Cons[+A] extends Stream[A] {
@@ -56,7 +61,8 @@ sealed abstract class Cons[+A] extends Stream[A] {
 
   def tail: Stream[A]
 
-  val uncons = Some(this)
+  // ex 6
+  def foldRight[B](z: => B)(f: (A, => B) => B) = f(head, tail.foldRight(z)(f))
 }
 
 object Stream {
