@@ -49,6 +49,14 @@ sealed abstract class Stream[+A] {
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A]) {
     (a, b) => if (p(a)) cons(a, b) else b
   }
+
+  // ex 7
+  def map[B](f: A => B): Stream[B] = foldRight(empty[B])((a, s) => cons(f(a), s))
+
+  // ex 7
+  def filter(p: A => Boolean): Stream[A] = foldRight(empty[A]) {
+    (a, s) => if (p(a)) cons(a, s) else s
+  }
 }
 
 object Empty extends Stream[Nothing] {
@@ -62,7 +70,8 @@ sealed abstract class Cons[+A] extends Stream[A] {
   def tail: Stream[A]
 
   // ex 6
-  def foldRight[B](z: => B)(f: (A, => B) => B) = f(head, tail.foldRight(z)(f))
+  def foldRight[B](z: => B)(f: (A, => B) => B) =
+    f(head, tail.foldRight(z)(f))
 }
 
 object Stream {
