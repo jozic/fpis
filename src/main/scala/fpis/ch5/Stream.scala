@@ -54,6 +54,12 @@ sealed abstract class Stream[+A] {
   def filter(p: A => Boolean): Stream[A] = foldRight(empty[A]) {
     (a, s) => if (p(a)) cons(a, s) else s
   }
+
+  //ex 7
+  def append[B >: A](another: => Stream[B]): Stream[B] = foldRight(another)((a, s) => cons(a, s))
+
+  // ex 7
+  def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B])((a, s) => f(a).append(s))
 }
 
 object Empty extends Stream[Nothing] {

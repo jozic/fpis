@@ -58,7 +58,7 @@ object Main extends App {
     i + 1
   })
   assert(x == 0)
-  private val twoMapped = mapped.take(2)
+  val twoMapped = mapped.take(2)
   assert(x == 1)
   assert(twoMapped.toList == List(2, 3))
   assert(x == 2)
@@ -77,5 +77,30 @@ object Main extends App {
   assert(x == 1)
   assert(twoFiltered.toList == List(1, 2))
   assert(x == 2)
+
+
+  assert(Stream.empty.append(Stream.empty).toList == Nil)
+  assert(Stream(1).append(Stream.empty).toList == List(1))
+  assert(Stream.empty.append(Stream(1)).toList == List(1))
+  assert(Stream(1).append(Stream(2)).toList == List(1, 2))
+  assert(Stream(1, 2, 3).append(Stream(4, 5, 6)).toList == List(1, 2, 3, 4, 5, 6))
+
+
+  val f = (i: Int) => {
+    x += 1
+    Stream(i + 1)
+  }
+  assert(Stream.empty[Int].flatMap(f).toList == Nil)
+  assert(Stream(1).flatMap(f).toList == List(2))
+
+  x = 0
+  val flatMapped = Stream(1, 2, 3, 4).flatMap(f)
+
+  assert(x == 1)
+  val twoFlatMapped = flatMapped.take(2)
+  assert(x == 1)
+  assert(twoFlatMapped.toList == List(2, 3))
+  assert(x == 2)
+
 
 }
