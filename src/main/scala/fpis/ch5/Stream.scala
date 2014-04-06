@@ -5,7 +5,7 @@ import Stream._
 sealed abstract class Stream[+A] {
 
   // ex 6
-  def uncons: Option[Cons[A]] = foldRight(None: Option[Cons[A]]) {
+  lazy val uncons: Option[Cons[A]] = foldRight(None: Option[Cons[A]]) {
     (a, b) => Option(cons(a, b.getOrElse(empty[A])).asInstanceOf[Cons[A]])
   }
 
@@ -18,13 +18,10 @@ sealed abstract class Stream[+A] {
   }
 
   // ex 2
-  def take(n: Int): Stream[A] = {
-    def go(i: Int, result: Stream[A] = Empty): Stream[A] = if (i == 0) result
-    else this match {
-      case c: Cons[A] => cons(c.head, c.tail.take(n - 1))
-      case _ => result
-    }
-    go(n)
+  def take(n: Int): Stream[A] = uncons match {
+    case Some(c) if n == 1 => cons(c.head, empty)
+    case Some(c) if n > 0 => cons(c.head, c.tail.take(n - 1))
+    case _ => empty
   }
 
   // ex 3

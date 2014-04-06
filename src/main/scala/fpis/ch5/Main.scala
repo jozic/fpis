@@ -53,12 +53,14 @@ object Main extends App {
   assert(Stream(1).map(_ + 1).toList == List(2))
 
   x = 0
-  val mapped = Stream(1, 2, 3).map(i => {
+  val mapped = Stream(1, 2, 3, 4).map(i => {
     x += 1
     i + 1
   })
   assert(x == 0)
-  assert(mapped.take(2).toList == List(2, 3))
+  private val twoMapped = mapped.take(2)
+  assert(x == 1)
+  assert(twoMapped.toList == List(2, 3))
   assert(x == 2)
 
   assert(Stream.empty[Int].filter(_ < 3).toList == Nil)
@@ -68,13 +70,12 @@ object Main extends App {
   x = 0
   val filtered = Stream(1, 2, 3, 4).filter(i => {
     x += 1
-    println(s"filter$i")
     i < 3
   })
   assert(x == 1)
-  private val two = filtered.take(2)
+  val twoFiltered = filtered.take(2)
   assert(x == 1)
-  assert(two.toList == List(1, 2))
+  assert(twoFiltered.toList == List(1, 2))
   assert(x == 2)
 
 }
