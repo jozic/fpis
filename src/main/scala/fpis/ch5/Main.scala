@@ -102,5 +102,21 @@ object Main extends App {
   assert(twoFlatMapped.toList == List(2, 3))
   assert(x == 2)
 
+  assert(Stream.constant(1).take(0).toList == Nil)
+  assert(Stream.constant(1).take(1).toList == List(1))
+  assert(Stream.constant(1).take(3).toList == List(1, 1, 1))
+
+  assert(Stream.constant2(1).take(0).toList == Nil)
+  assert(Stream.constant2(1).take(1).toList == List(1))
+  assert(Stream.constant2(1).take(3).toList == List(1, 1, 1))
+
+  assert(Stream.from(1).take(0).toList == Nil)
+  assert(Stream.from(1).take(1).toList == List(1))
+  assert(Stream.from(1).take(3).toList == List(1, 2, 3))
+
+  assert(Stream.fibs.take(0).toList == Nil)
+  assert(Stream.fibs.take(1).toList == List(0))
+  assert(Stream.fibs.take(7).toList == List(0, 1, 1, 2, 3, 5, 8))
+
 
 }

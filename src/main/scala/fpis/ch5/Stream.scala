@@ -87,4 +87,23 @@ object Stream {
 
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) Empty else cons(as.head, apply(as.tail: _*))
+
+  // ex 8
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+  def constant2[A](a: A): Stream[A] = new Cons[A] {
+    lazy val tail = this
+
+    lazy val head = a
+  }
+
+  // ex 9
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+
+  // ex 10
+  def fibs: Stream[Int] = {
+    def go(a: Int, b: Int): Stream[Int] = cons(a, go(b, a + b))
+    go(0, 1)
+  }
+
 }
