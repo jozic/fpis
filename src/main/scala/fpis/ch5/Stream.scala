@@ -106,4 +106,24 @@ object Stream {
     go(0, 1)
   }
 
+  // ex 11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case Some((a, s)) => cons(a, unfold(s)(f))
+    case _ => Empty
+  }
+
+  // ex 12
+  def constantViaUnfold[A](a: A): Stream[A] = unfold(null)(_ => Some(a, null))
+
+  // ex 12
+  def onesViaUnfold: Stream[Int] = constantViaUnfold(1)
+
+  // ex 12
+  def fromViaUnfold(n: Int): Stream[Int] = unfold[Int, Int](1)(a => Some(a, a + 1))
+
+  // ex 12
+  def fibsViaUnfold: Stream[Int] = cons(0, unfold((0, 1)) {
+    case (a, b) => Some(b, (b, a + b))
+  })
+
 }

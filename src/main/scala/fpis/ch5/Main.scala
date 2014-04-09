@@ -119,4 +119,21 @@ object Main extends App {
   assert(Stream.fibs.take(7).toList == List(0, 1, 1, 2, 3, 5, 8))
 
 
+  assert(Stream.constantViaUnfold(1).take(0).toList == Nil)
+  assert(Stream.constantViaUnfold(1).take(1).toList == List(1))
+  assert(Stream.constantViaUnfold(1).take(3).toList == List(1, 1, 1))
+
+  assert(Stream.onesViaUnfold.take(0).toList == Nil)
+  assert(Stream.onesViaUnfold.take(1).toList == List(1))
+  assert(Stream.onesViaUnfold.take(3).toList == List(1, 1, 1))
+
+  assert(Stream.fromViaUnfold(1).take(0).toList == Nil)
+  assert(Stream.fromViaUnfold(1).take(1).toList == List(1))
+  assert(Stream.fromViaUnfold(1).take(3).toList == List(1, 2, 3))
+
+  assert(Stream.fibsViaUnfold.take(0).toList == Nil)
+  assert(Stream.fibsViaUnfold.take(1).toList == List(0))
+  assert(Stream.fibsViaUnfold.take(7).toList == List(0, 1, 1, 2, 3, 5, 8))
+
+
 }
