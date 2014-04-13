@@ -60,6 +60,42 @@ sealed abstract class Stream[+A] {
 
   // ex 7
   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B])((a, s) => f(a).append(s))
+
+  // ex 13
+  def mapViaUnfold[B](f: A => B): Stream[B] =
+    Stream.unfold(this)(_.uncons.map(c => f(c.head) -> c.tail))
+
+  // ex 13
+  def takeViaUnfold(n: Int): Stream[A] = Stream.unfold(n, this) {
+    case (nn, _) if nn == 0 => None
+    case (nn, s) if nn == 1 => s.uncons.map(c => (c.head, (nn - 1, empty[A])))
+    case (nn, s) => s.uncons.map(c => (c.head, (nn - 1, c.tail)))
+  }
+
+  // ex 13
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] =
+    Stream.unfold(this)(_.uncons.flatMap {
+      case c if p(c.head) => Some(c.head -> c.tail)
+      case _ => None
+    })
+
+  // ex 13
+  def zip[B](other: Stream[B]): Stream[(A, B)] = Stream.unfold((this, other)) {
+    case (sa, sb) => for {
+      ac <- sa.uncons
+      bc <- sb.uncons
+    } yield (ac.head -> bc.head) -> (ac.tail -> bc.tail)
+  }
+
+  // ex 13
+  def zipAll[B](other: Stream[B]): Stream[(Option[A], Option[B])] = Stream.unfold((this, other)) { case (sa, sb) =>
+    (sa.uncons, sb.uncons) match {
+      case (None, None) => None
+      case (aco, bco) =>
+        Some((aco.map(_.head) -> bco.map(_.head), aco.fold(empty[A])(_.tail) -> bco.fold(empty[B])(_.tail)))
+    }
+  }
+
 }
 
 object Empty extends Stream[Nothing] {
@@ -125,5 +161,6 @@ object Stream {
   def fibsViaUnfold: Stream[Int] = cons(0, unfold((0, 1)) {
     case (a, b) => Some(b, (b, a + b))
   })
+
 
 }

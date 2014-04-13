@@ -135,5 +135,52 @@ object Main extends App {
   assert(Stream.fibsViaUnfold.take(1).toList == List(0))
   assert(Stream.fibsViaUnfold.take(7).toList == List(0, 1, 1, 2, 3, 5, 8))
 
+  assert(Stream.empty[Int].map(_ + 1).toList == Nil)
+  assert(Stream(1).map(_ + 1).toList == List(2))
+
+  x = 0
+  val mappedUnfold = Stream(1, 2, 3, 4).mapViaUnfold(i => {
+    x += 1
+    i + 1
+  })
+  assert(x == 1) // here mapViaUnfold will intitialize head
+  val twoMappedUnfold = mappedUnfold.take(2)
+  assert(x == 1)
+  assert(twoMappedUnfold.toList == List(2, 3))
+  assert(x == 2)
+
+  assert(Stream.empty.takeViaUnfold(0).toList == Nil)
+  assert(Stream.empty.takeViaUnfold(10).toList == Nil)
+  assert(Stream(1).takeViaUnfold(0).toList == Nil)
+  assert(Stream(1).takeViaUnfold(1).toList == List(1))
+  assert(Stream(1).takeViaUnfold(10).toList == List(1))
+
+  x = 0
+  val stream2 = Cons(ix(1), Cons(ix(2), Cons(ix(3), Cons(ix(4), Empty))))
+  assert(x == 0)
+  assert(stream2.takeViaUnfold(2).toList == List(1, 2))
+  assert(x == 2)
+
+  assert(Stream.empty[Int].takeWhileViaUnfold(_ < 3).toList == Nil)
+  assert(Stream(1).takeWhileViaUnfold(_ > 3).toList == Nil)
+  assert(Stream(1).takeWhileViaUnfold(_ < 3).toList == List(1))
+  assert(Stream(1, 2, 3).takeWhileViaUnfold(_ < 3).toList == List(1, 2))
+
+  assert(Stream.empty[Int].zip(Stream.empty[Int]).toList == Nil)
+  assert(Stream.empty[Int].zip(Stream(1, 2, 3)).toList == Nil)
+  assert(Stream(1, 2, 3).zip(Stream.empty[Int]).toList == Nil)
+  assert(Stream(1, 2, 3).zip(Stream(4, 5, 6)).toList == List(1 -> 4, 2 -> 5, 3 -> 6))
+  assert(Stream(1, 2, 3).zip(Stream(4, 5)).toList == List(1 -> 4, 2 -> 5))
+  assert(Stream(1, 2).zip(Stream(4, 5, 6)).toList == List(1 -> 4, 2 -> 5))
+
+  assert(Stream.empty[Int].zipAll(Stream.empty[Int]).take(3).toList == Nil)
+  assert(Stream.empty[Int].zipAll(Stream(1, 2, 3)).take(3).toList == List(None -> Some(1), None -> Some(2), None -> Some(3)))
+  assert(Stream(1, 2, 3).zipAll(Stream.empty[Int]).take(3).toList == List(Some(1) -> None, Some(2) -> None, Some(3) -> None))
+  assert(Stream(1, 2, 3).zipAll(Stream(4, 5, 6)).take(3).toList == List(Some(1) -> Some(4), Some(2) -> Some(5), Some(3) -> Some(6)))
+
+  assert(Stream.empty[Int].zipAll(Stream.empty[Int]).toList == Nil)
+  assert(Stream.empty[Int].zipAll(Stream(1, 2, 3)).toList == List(None -> Some(1), None -> Some(2), None -> Some(3)))
+  assert(Stream(1, 2, 3).zipAll(Stream.empty[Int]).toList == List(Some(1) -> None, Some(2) -> None, Some(3) -> None))
+  assert(Stream(1, 2, 3).zipAll(Stream(4, 5, 6)).toList == List(Some(1) -> Some(4), Some(2) -> Some(5), Some(3) -> Some(6)))
 
 }
