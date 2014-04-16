@@ -143,7 +143,8 @@ object Main extends App {
     x += 1
     i + 1
   })
-  assert(x == 1) // here mapViaUnfold will intitialize head
+  // here mapViaUnfold will initialize head
+  assert(x == 1)
   val twoMappedUnfold = mappedUnfold.take(2)
   assert(x == 1)
   assert(twoMappedUnfold.toList == List(2, 3))
@@ -182,5 +183,16 @@ object Main extends App {
   assert(Stream.empty[Int].zipAll(Stream(1, 2, 3)).toList == List(None -> Some(1), None -> Some(2), None -> Some(3)))
   assert(Stream(1, 2, 3).zipAll(Stream.empty[Int]).toList == List(Some(1) -> None, Some(2) -> None, Some(3) -> None))
   assert(Stream(1, 2, 3).zipAll(Stream(4, 5, 6)).toList == List(Some(1) -> Some(4), Some(2) -> Some(5), Some(3) -> Some(6)))
+
+  assert(Stream.startsWith(Stream.empty, Stream.empty))
+  assert(Stream.startsWith(Stream(1), Stream(1)))
+  assert(Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 3)))
+  assert(Stream.startsWith(Stream(1, 2, 3), Stream(1, 2)))
+  assert(Stream.startsWith(Stream(1, 2, 3), Stream(1)))
+  assert(Stream.startsWith(Stream(1, 2, 3), Stream.empty))
+
+  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1,2,4)))
+  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1,2,4)))
+  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 3, 4)))
 
 }

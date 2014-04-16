@@ -162,5 +162,13 @@ object Stream {
     case (a, b) => Some(b, (b, a + b))
   })
 
+  // ex 14 (hard)
+  def startsWith[A](s: Stream[A], s2: Stream[A]): Boolean =
+    if (s eq s2) true
+    else s.zipAll(s2).forAll {
+      case (Some(a1), Some(a2)) => a1 == a2
+      case (None, Some(_)) => false
+      case (_, None) => true
+    }
 
 }
