@@ -2,39 +2,38 @@ package fpis.ch5
 
 import Stream._
 
-sealed abstract class Stream[+A] {
+case object Empty extends Stream[Nothing]
 
-  // ex 6
-  lazy val uncons: Option[Cons[A]] = foldRight(None: Option[Cons[A]]) {
-    (a, b) => Option(cons(a, b.getOrElse(empty[A])).asInstanceOf[Cons[A]])
-  }
+case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
-  def isEmpty: Boolean = uncons.isEmpty
+sealed trait Stream[+A] {
+
+  def isEmpty = this eq Empty
 
   // ex 1
-  def toList: List[A] = uncons match {
-    case None => Nil
-    case Some(c) => c.head :: c.tail.toList
+  def toList: List[A] = this match {
+    case Cons(h, t) => h() :: t().toList
+    case _ => Nil
   }
 
   // ex 2
-  def take(n: Int): Stream[A] = uncons match {
-    case Some(c) if n == 1 => cons(c.head, empty)
-    case Some(c) if n > 0 => cons(c.head, c.tail.take(n - 1))
+  def take(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n > 1 => cons[A](h(), t().take(n - 1))
+    case Cons(h, t) if n == 1 => cons(h(), empty)
     case _ => empty
   }
 
   // ex 3
-  def takeWhile(p: A => Boolean): Stream[A] = uncons match {
-    case Some(c) if p(c.head) => cons(c.head, c.tail.takeWhile(p))
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Cons(h, t) =>
+      val head = h()
+      if (p(head)) cons(head, t().takeWhile(p)) else Empty
     case _ => Empty
   }
 
-  def foldRight[B](z: => B)(f: (A, => B) => B): B
-
-  def foldRight0[B](z: => B)(f: (A, => B) => B): B = uncons match {
-    case Some(c) => f(c.head, c.tail.foldRight(z)(f))
-    case None => z
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+    case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    case _ => z
   }
 
   def exists(p: A => Boolean): Boolean = foldRight(false)((a, b) => p(a) || b)
@@ -44,8 +43,11 @@ sealed abstract class Stream[+A] {
 
   // ex 5
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A]) {
-    (a, b) => if (p(a)) cons(a, b) else b
+    (a, b) => if (p(a)) cons(a, b) else empty
   }
+
+  //ex 6 (hard)
+  // TODO: new exercise - re-implement
 
   // ex 7
   def map[B](f: A => B): Stream[B] = foldRight(empty[B])((a, s) => cons(f(a), s))
@@ -62,75 +64,61 @@ sealed abstract class Stream[+A] {
   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B])((a, s) => f(a).append(s))
 
   // ex 13
-  def mapViaUnfold[B](f: A => B): Stream[B] =
-    Stream.unfold(this)(_.uncons.map(c => f(c.head) -> c.tail))
+  def mapViaUnfold[B](f: A => B): Stream[B] = Stream.unfold(this) {
+    case Cons(h, t) => Some(f(h()) -> t())
+    case _ => None
+  }
 
   // ex 13
   def takeViaUnfold(n: Int): Stream[A] = Stream.unfold(n, this) {
-    case (nn, _) if nn == 0 => None
-    case (nn, s) if nn == 1 => s.uncons.map(c => (c.head, (nn - 1, empty[A])))
-    case (nn, s) => s.uncons.map(c => (c.head, (nn - 1, c.tail)))
+    case (nn, Cons(h, t)) if nn == 1 => Some(h(), (nn - 1, empty[A]))
+    case (nn, Cons(h, t)) if nn > 0 => Some(h(), (nn - 1, t()))
+    case _ => None
   }
 
   // ex 13
   def takeWhileViaUnfold(p: A => Boolean): Stream[A] =
-    Stream.unfold(this)(_.uncons.flatMap {
-      case c if p(c.head) => Some(c.head -> c.tail)
+    Stream.unfold(this) {
+      case Cons(h, t) =>
+        lazy val head = h()
+        if (p(head)) Some(head -> t()) else None
       case _ => None
-    })
+    }
 
   // ex 13
   def zip[B](other: Stream[B]): Stream[(A, B)] = Stream.unfold((this, other)) {
-    case (sa, sb) => for {
-      ac <- sa.uncons
-      bc <- sb.uncons
-    } yield (ac.head -> bc.head) -> (ac.tail -> bc.tail)
+    case (Cons(h1, t1), Cons(h2, t2)) => Some((h1() -> h2()) -> (t1() -> t2()))
+    case _ => None
   }
 
   // ex 13
-  def zipAll[B](other: Stream[B]): Stream[(Option[A], Option[B])] = Stream.unfold((this, other)) { case (sa, sb) =>
-    (sa.uncons, sb.uncons) match {
-      case (None, None) => None
-      case (aco, bco) =>
-        Some((aco.map(_.head) -> bco.map(_.head), aco.fold(empty[A])(_.tail) -> bco.fold(empty[B])(_.tail)))
-    }
+  def zipAll[B](other: Stream[B]): Stream[(Option[A], Option[B])] = Stream.unfold((this, other)) {
+    case (Empty, Empty) => None
+    case (Cons(h, t), Empty) => Some((Some(h()) -> Option.empty[B], t() -> empty[B]))
+    case (Empty, Cons(h, t)) => Some((Option.empty[A] -> Some(h()), empty[A] -> t()))
+    case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()) -> Some(h2())) -> (t1() -> t2()))
   }
-
-}
-
-object Empty extends Stream[Nothing] {
-  // ex 6
-  def foldRight[B](z: => B)(f: (Nothing, => B) => B) = z
-}
-
-sealed abstract class Cons[+A] extends Stream[A] {
-  def head: A
-
-  def tail: Stream[A]
-
-  // ex 6
-  def foldRight[B](z: => B)(f: (A, => B) => B) =
-    f(head, tail.foldRight(z)(f))
 }
 
 object Stream {
-  def empty[A]: Stream[A] = Empty
 
-  def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = new Cons[A] {
+  def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
     lazy val head = hd
     lazy val tail = tl
+    Cons(() => head, () => tail)
   }
 
+  def empty[A]: Stream[A] = Empty
+
   def apply[A](as: A*): Stream[A] =
-    if (as.isEmpty) Empty else cons(as.head, apply(as.tail: _*))
+    if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
 
   // ex 8
   def constant[A](a: A): Stream[A] = cons(a, constant(a))
 
-  def constant2[A](a: A): Stream[A] = new Cons[A] {
-    lazy val tail = this
-
-    lazy val head = a
+  def constant2[A](a: A): Stream[A] = {
+    lazy val cons: Stream[A] = new Cons[A](() => a, () => cons)
+    cons
   }
 
   // ex 9
@@ -162,7 +150,7 @@ object Stream {
     case (a, b) => Some(b, (b, a + b))
   })
 
-  // ex 14 (hard)
+  //  ex 14 (hard)
   def startsWith[A](s: Stream[A], s2: Stream[A]): Boolean =
     if (s eq s2) true
     else s.zipAll(s2).forAll {

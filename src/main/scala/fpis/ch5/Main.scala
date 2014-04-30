@@ -1,12 +1,25 @@
 package fpis.ch5
 
-import Stream.{cons => Cons}
-
 object Main extends App {
+
+  var x = 0
+
+  def resetX() = x = 0
+
+  def sstream[A](a: A*)(se: => Unit): Stream[A] =
+    if (a.isEmpty) Empty
+    else Cons(() => {
+      se
+      a.head
+    }, () => sstream(a.tail: _*)(se))
+
+  def XStream[A](a: A*): Stream[A] = sstream(a: _*)(x += 1)
 
   assert(Stream.empty.toList == Nil)
   assert(Stream(1).toList == List(1))
-  assert(Stream(1, 2, 3).toList == List(1, 2, 3))
+  resetX()
+  assert(XStream(1, 2, 3).toList == List(1, 2, 3))
+  assert(x == 3)
 
   assert(Stream.empty.take(0).toList == Nil)
   assert(Stream.empty.take(10).toList == Nil)
@@ -14,14 +27,8 @@ object Main extends App {
   assert(Stream(1).take(1).toList == List(1))
   assert(Stream(1).take(10).toList == List(1))
 
-  var x = 0
-
-  def ix(i: Int) = {
-    x += 1
-    i
-  }
-
-  val stream = Cons(ix(1), Cons(ix(2), Cons(ix(3), Empty)))
+  resetX()
+  val stream = XStream(1, 2, 3, 4, 5)
   assert(x == 0)
   assert(stream.take(2).toList == List(1, 2))
   assert(x == 2)
@@ -29,35 +36,40 @@ object Main extends App {
   assert(Stream.empty[Int].takeWhile(_ < 3).toList == Nil)
   assert(Stream(1).takeWhile(_ > 3).toList == Nil)
   assert(Stream(1).takeWhile(_ < 3).toList == List(1))
-  assert(Stream(1, 2, 3).takeWhile(_ < 3).toList == List(1, 2))
+  resetX()
+  assert(XStream(1, 2, 3, 4, 5).takeWhile(_ < 3).toList == List(1, 2))
+  assert(x == 3)
+
+  resetX()
+  val tw = XStream(1, 2, 3, 4, 5).takeWhile(_ < 4)
+  assert(x == 1)
+  val twt = tw.take(2)
+  assert(x == 1)
+  assert(twt.toList == List(1, 2))
+  assert(x == 2)
 
   assert(Stream.empty[Int].forAll(_ < 3))
   assert(Stream(1).forAll(_ < 3))
   assert(Stream(1, 2).forAll(_ < 3))
   assert(!Stream(1, 2, 3).forAll(_ < 3))
 
-  x = 0
-  assert(!Stream(1, 2, 3, 4, 5).forAll(i => {
-    x = i
-    i < 3
-  }))
+  resetX()
+  assert(!XStream(1, 2, 3, 4, 5).forAll(_ < 3))
   assert(x == 3)
 
   assert(Stream.empty[Int].takeWhileViaFoldRight(_ < 3).toList == Nil)
   assert(Stream(1).takeWhileViaFoldRight(_ > 3).toList == Nil)
   assert(Stream(1).takeWhileViaFoldRight(_ < 3).toList == List(1))
-  assert(Stream(1, 2, 3).takeWhileViaFoldRight(_ < 3).toList == List(1, 2))
-
+  resetX()
+  assert(XStream(1, 2, 3, 4, 5, 6, 7).takeWhileViaFoldRight(_ < 3).toList == List(1, 2))
+  assert(x == 3)
 
   assert(Stream.empty[Int].map(_ + 1).toList == Nil)
   assert(Stream(1).map(_ + 1).toList == List(2))
 
-  x = 0
-  val mapped = Stream(1, 2, 3, 4).map(i => {
-    x += 1
-    i + 1
-  })
-  assert(x == 0)
+  resetX()
+  val mapped = XStream(1, 2, 3, 4).map(_ + 1)
+  assert(x == 1)
   val twoMapped = mapped.take(2)
   assert(x == 1)
   assert(twoMapped.toList == List(2, 3))
@@ -65,36 +77,35 @@ object Main extends App {
 
   assert(Stream.empty[Int].filter(_ < 3).toList == Nil)
   assert(Stream(1).filter(_ < 3).toList == List(1))
-  assert(Stream(1, 2, 3).filter(_ < 3).toList == List(1, 2))
+  resetX()
+  assert(XStream(1, 2, 3, 4, 5).filter(_ < 3).toList == List(1, 2))
+  assert(x == 5)
 
-  x = 0
-  val filtered = Stream(1, 2, 3, 4).filter(i => {
-    x += 1
-    i < 3
-  })
+  resetX()
+  val filtered = XStream(1, 2, 3, 4, 5).filter(_ < 3)
   assert(x == 1)
   val twoFiltered = filtered.take(2)
   assert(x == 1)
   assert(twoFiltered.toList == List(1, 2))
   assert(x == 2)
 
-
   assert(Stream.empty.append(Stream.empty).toList == Nil)
   assert(Stream(1).append(Stream.empty).toList == List(1))
   assert(Stream.empty.append(Stream(1)).toList == List(1))
   assert(Stream(1).append(Stream(2)).toList == List(1, 2))
-  assert(Stream(1, 2, 3).append(Stream(4, 5, 6)).toList == List(1, 2, 3, 4, 5, 6))
+  resetX()
+  val app = XStream(1, 2, 3).append(XStream(4, 5, 6))
+  assert(x == 1)
+  assert(app.toList == List(1, 2, 3, 4, 5, 6))
+  assert(x == 6)
 
+  val f = (i: Int) => Stream(i + 1)
 
-  val f = (i: Int) => {
-    x += 1
-    Stream(i + 1)
-  }
   assert(Stream.empty[Int].flatMap(f).toList == Nil)
   assert(Stream(1).flatMap(f).toList == List(2))
 
-  x = 0
-  val flatMapped = Stream(1, 2, 3, 4).flatMap(f)
+  resetX()
+  val flatMapped = XStream(1, 2, 3, 4).flatMap(f)
 
   assert(x == 1)
   val twoFlatMapped = flatMapped.take(2)
@@ -118,7 +129,6 @@ object Main extends App {
   assert(Stream.fibs.take(1).toList == List(0))
   assert(Stream.fibs.take(7).toList == List(0, 1, 1, 2, 3, 5, 8))
 
-
   assert(Stream.constantViaUnfold(1).take(0).toList == Nil)
   assert(Stream.constantViaUnfold(1).take(1).toList == List(1))
   assert(Stream.constantViaUnfold(1).take(3).toList == List(1, 1, 1))
@@ -135,15 +145,11 @@ object Main extends App {
   assert(Stream.fibsViaUnfold.take(1).toList == List(0))
   assert(Stream.fibsViaUnfold.take(7).toList == List(0, 1, 1, 2, 3, 5, 8))
 
-  assert(Stream.empty[Int].map(_ + 1).toList == Nil)
-  assert(Stream(1).map(_ + 1).toList == List(2))
+  assert(Stream.empty[Int].mapViaUnfold(_ + 1).toList == Nil)
+  assert(Stream(1).mapViaUnfold(_ + 1).toList == List(2))
 
-  x = 0
-  val mappedUnfold = Stream(1, 2, 3, 4).mapViaUnfold(i => {
-    x += 1
-    i + 1
-  })
-  // here mapViaUnfold will initialize head
+  resetX()
+  val mappedUnfold = XStream(1, 2, 3, 4).mapViaUnfold(_ + 1)
   assert(x == 1)
   val twoMappedUnfold = mappedUnfold.take(2)
   assert(x == 1)
@@ -156,8 +162,8 @@ object Main extends App {
   assert(Stream(1).takeViaUnfold(1).toList == List(1))
   assert(Stream(1).takeViaUnfold(10).toList == List(1))
 
-  x = 0
-  val stream2 = Cons(ix(1), Cons(ix(2), Cons(ix(3), Cons(ix(4), Empty))))
+  resetX()
+  val stream2 = XStream(1, 2, 3)
   assert(x == 0)
   assert(stream2.takeViaUnfold(2).toList == List(1, 2))
   assert(x == 2)
@@ -165,7 +171,29 @@ object Main extends App {
   assert(Stream.empty[Int].takeWhileViaUnfold(_ < 3).toList == Nil)
   assert(Stream(1).takeWhileViaUnfold(_ > 3).toList == Nil)
   assert(Stream(1).takeWhileViaUnfold(_ < 3).toList == List(1))
-  assert(Stream(1, 2, 3).takeWhileViaUnfold(_ < 3).toList == List(1, 2))
+
+  resetX()
+  val stream3 = XStream(1, 2, 3, 4, 5)
+  assert(x == 0)
+  assert(stream3.takeWhileViaUnfold(_ < 3).toList == List(1, 2))
+  assert(x == 3)
+
+
+  resetX()
+  val tw2 = XStream(1, 2, 3, 4, 5).takeWhileViaUnfold(_ < 4)
+  assert(x == 1)
+  val twt2 = tw2.takeViaUnfold(2)
+  assert(x == 2) // why not x == 1?
+  assert(twt2.toList == List(1, 2))
+  assert(x == 2)
+
+  resetX()
+  val tw3 = XStream(1, 2, 3, 4, 5).takeWhileViaUnfold(_ < 4)
+  assert(x == 1)
+  val twt3 = tw3.takeViaUnfold(3)
+  assert(x == 2) // why not x == 1?
+  assert(twt3.toList == List(1,2,3))
+  assert(x == 3)
 
   assert(Stream.empty[Int].zip(Stream.empty[Int]).toList == Nil)
   assert(Stream.empty[Int].zip(Stream(1, 2, 3)).toList == Nil)
@@ -191,8 +219,8 @@ object Main extends App {
   assert(Stream.startsWith(Stream(1, 2, 3), Stream(1)))
   assert(Stream.startsWith(Stream(1, 2, 3), Stream.empty))
 
-  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1,2,4)))
-  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1,2,4)))
+  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 4)))
+  assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 4)))
   assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 3, 4)))
 
 }
