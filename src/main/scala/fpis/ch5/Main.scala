@@ -64,6 +64,13 @@ object Main extends App {
   assert(XStream(1, 2, 3, 4, 5, 6, 7).takeWhileViaFoldRight(_ < 3).toList == List(1, 2))
   assert(x == 3)
 
+  assert(Stream.empty[Int].headOption == None)
+  assert(Stream(1).headOption == Some(1))
+  assert(Stream(1, 2, 3).headOption == Some(1))
+  resetX()
+  assert(XStream(1, 2, 3).headOption == Some(1))
+  assert(x == 1)
+
   assert(Stream.empty[Int].map(_ + 1).toList == Nil)
   assert(Stream(1).map(_ + 1).toList == List(2))
 

@@ -47,7 +47,7 @@ sealed trait Stream[+A] {
   }
 
   //ex 6 (hard)
-  // TODO: new exercise - re-implement
+  def headOption: Option[A] = foldRight(Option.empty[A])((a, _) => Some(a))
 
   // ex 7
   def map[B](f: A => B): Stream[B] = foldRight(empty[B])((a, s) => cons(f(a), s))
