@@ -98,6 +98,24 @@ sealed trait Stream[+A] {
     case (Empty, Cons(h, t)) => Some((Option.empty[A] -> Some(h()), empty[A] -> t()))
     case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()) -> Some(h2())) -> (t1() -> t2()))
   }
+
+  // ex 15
+  def tails1: Stream[Stream[A]] = {
+    Stream.unfold[Stream[A], (Stream[A], Boolean)]((this, true)) {
+      case (s@Cons(h, t), _) => Some(s ->(t(), true))
+      case (_, true) => Some(empty[A] ->(empty[A], false))
+      case (_, false) => None
+    }
+  }
+
+  // ex 15 - better
+  def tails: Stream[Stream[A]] = {
+    Stream.unfold[Stream[A], Stream[A]](this) {
+      case s@Cons(h, t) => Some(s -> t())
+      case _ => None
+    } append Stream(empty[A])
+  }
+
 }
 
 object Stream {
@@ -158,5 +176,6 @@ object Stream {
       case (None, Some(_)) => false
       case (_, None) => true
     }
+
 
 }

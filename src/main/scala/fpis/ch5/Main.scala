@@ -199,7 +199,7 @@ object Main extends App {
   assert(x == 1)
   val twt3 = tw3.takeViaUnfold(3)
   assert(x == 2) // why not x == 1?
-  assert(twt3.toList == List(1,2,3))
+  assert(twt3.toList == List(1, 2, 3))
   assert(x == 3)
 
   assert(Stream.empty[Int].zip(Stream.empty[Int]).toList == Nil)
@@ -230,4 +230,13 @@ object Main extends App {
   assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 4)))
   assert(!Stream.startsWith(Stream(1, 2, 3), Stream(1, 2, 3, 4)))
 
+  assert(Empty.tails.toList == List(Empty))
+  assert(Stream(1).tails.toList.size == 2)
+  assert(Stream(1).tails.toList.flatMap(_.toList) == List(1))
+
+  assert(Stream(1, 2).tails.toList.size == 3)
+  assert(Stream(1, 2).tails.toList.flatMap(_.toList) == List(1, 2, 2))
+
+  assert(Stream(1, 2, 3).tails.toList.size == 4)
+  assert(Stream(1, 2, 3).tails.toList.flatMap(_.toList) == List(1, 2, 3, 2, 3, 3))
 }
