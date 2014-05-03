@@ -70,9 +70,9 @@ sealed trait Stream[+A] {
   }
 
   // ex 13
-  def takeViaUnfold(n: Int): Stream[A] = Stream.unfold(n, this) {
-    case (nn, Cons(h, t)) if nn == 1 => Some(h(), (nn - 1, empty[A]))
-    case (nn, Cons(h, t)) if nn > 0 => Some(h(), (nn - 1, t()))
+  def takeViaUnfold(n: Int): Stream[A] = Stream.unfold((n, this)) {
+    case (nn, Cons(h, t)) if nn == 1 => Some(h() -> ((nn - 1) -> empty[A]))
+    case (nn, Cons(h, t)) if nn > 0 => Some(h() -> ((nn - 1) -> t()))
     case _ => None
   }
 
@@ -102,8 +102,8 @@ sealed trait Stream[+A] {
   // ex 15
   def tails1: Stream[Stream[A]] = {
     Stream.unfold[Stream[A], (Stream[A], Boolean)]((this, true)) {
-      case (s@Cons(h, t), _) => Some(s ->(t(), true))
-      case (_, true) => Some(empty[A] ->(empty[A], false))
+      case (s@Cons(h, t), _) => Some(s -> (t() -> true))
+      case (_, true) => Some(empty[A] -> (empty[A] -> false))
       case (_, false) => None
     }
   }
@@ -155,17 +155,17 @@ object Stream {
   }
 
   // ex 12
-  def constantViaUnfold[A](a: A): Stream[A] = unfold(null)(_ => Some(a, null))
+  def constantViaUnfold[A](a: A): Stream[A] = unfold(null)(_ => Some(a -> null))
 
   // ex 12
   def onesViaUnfold: Stream[Int] = constantViaUnfold(1)
 
   // ex 12
-  def fromViaUnfold(n: Int): Stream[Int] = unfold[Int, Int](1)(a => Some(a, a + 1))
+  def fromViaUnfold(n: Int): Stream[Int] = unfold[Int, Int](1)(a => Some(a -> (a + 1)))
 
   // ex 12
   def fibsViaUnfold: Stream[Int] = cons(0, unfold((0, 1)) {
-    case (a, b) => Some(b, (b, a + b))
+    case (a, b) => Some(b -> (b -> (a + b)))
   })
 
   //  ex 14 (hard)
