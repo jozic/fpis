@@ -23,6 +23,12 @@ sealed trait Stream[+A] {
     case _ => empty
   }
 
+  // ex 2
+  def drop(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n > 0 => t().drop(n - 1)
+    case _ => this
+  }
+
   // ex 3
   def takeWhile(p: A => Boolean): Stream[A] = this match {
     case Cons(h, t) =>

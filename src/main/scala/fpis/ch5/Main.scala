@@ -33,6 +33,18 @@ object Main extends App {
   assert(stream.take(2).toList == List(1, 2))
   assert(x == 2)
 
+  assert(Stream.empty.drop(0).toList == Nil)
+  assert(Stream.empty.drop(10).toList == Nil)
+  assert(Stream(1).drop(0).toList == List(1))
+  assert(Stream(1).drop(1).toList == Nil)
+  assert(Stream(1).drop(10).toList == Nil)
+
+  resetX()
+  val streamD = XStream(1, 2, 3, 4, 5)
+  assert(x == 0)
+  assert(streamD.drop(2).toList == List(3, 4, 5))
+  assert(x == 3)
+
   assert(Stream.empty[Int].takeWhile(_ < 3).toList == Nil)
   assert(Stream(1).takeWhile(_ > 3).toList == Nil)
   assert(Stream(1).takeWhile(_ < 3).toList == List(1))
