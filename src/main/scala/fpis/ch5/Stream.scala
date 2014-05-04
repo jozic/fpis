@@ -122,6 +122,16 @@ sealed trait Stream[+A] {
     } append Stream(empty[A])
   }
 
+  // ex 16, hard
+  def scanRight[B](z: B)(f: (A, B) => B): Stream[B] = foldRight((z, Stream(z))) {
+    case (a, (b, s)) =>
+      val bb = f(a, b)
+      bb -> cons(bb, s)
+  }._2
+
+  // ex 16
+  def tailsViaScanRight = scanRight[Stream[A]](empty[A])(cons(_, _))
+
 }
 
 object Stream {

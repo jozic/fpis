@@ -251,4 +251,14 @@ object Main extends App {
 
   assert(Stream(1, 2, 3).tails.toList.size == 4)
   assert(Stream(1, 2, 3).tails.toList.flatMap(_.toList) == List(1, 2, 3, 2, 3, 3))
+
+  assert(Empty.tailsViaScanRight.toList == List(Empty))
+  assert(Stream(1).tailsViaScanRight.toList.size == 2)
+  assert(Stream(1).tailsViaScanRight.toList.flatMap(_.toList) == List(1))
+
+  assert(Stream(1, 2).tailsViaScanRight.toList.size == 3)
+  assert(Stream(1, 2).tailsViaScanRight.toList.flatMap(_.toList) == List(1, 2, 2))
+
+  assert(Stream(1, 2, 3).tailsViaScanRight.toList.size == 4)
+  assert(Stream(1, 2, 3).tailsViaScanRight.toList.flatMap(_.toList) == List(1, 2, 3, 2, 3, 3))
 }
