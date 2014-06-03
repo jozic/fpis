@@ -20,6 +20,48 @@ object RNG {
       case (i, newRNG) => (i.toDouble / Int.MaxValue, newRNG)
     }
   }
+
+  // ex 3
+  def intDouble(rng: RNG): ((Int, Double), RNG) = {
+    val (i, rng1) = rng.nextInt
+    val (d, rng2) = RNG.double(rng1)
+    (i, d) -> rng2
+  }
+
+  // ex 3
+  def doubleInt(rng: RNG): ((Double, Int), RNG) = {
+    val ((i, d), nRng) = intDouble(rng)
+    (d, i) -> nRng
+  }
+
+  // ex 3
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+    val (d1, rng1) = RNG.double(rng)
+    val (d2, rng2) = RNG.double(rng1)
+    val (d3, rng3) = RNG.double(rng2)
+    (d1, d2, d3) -> rng3
+  }
+
+  // ex 3
+  def double32(rng: RNG): ((Double, Double, Double), RNG) = {
+    val (d1, rng1) = RNG.double(rng)
+    val (d2, rng2) = RNG.double(rng1)
+    val (d3, rng3) = RNG.double(rng2)
+    (d1, d2, d3) -> rng3
+  }
+
+  // ex 4
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    def go(c: Int, r: RNG, acc: List[Int] = Nil): (List[Int], RNG) = {
+      if (c <= 0) acc -> r
+      else {
+        val (i, r2) = r.nextInt
+        go(c - 1, r2, i :: acc)
+      }
+    }
+    go(count, rng)
+  }
+
 }
 
 case class Simple(seed: Long) extends RNG {
