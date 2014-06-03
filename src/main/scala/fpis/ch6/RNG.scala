@@ -6,6 +6,8 @@ trait RNG {
 
 object RNG {
 
+  type Rand[+A] = RNG => (A, RNG)
+
   // ex 1
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (res, newRNG) = rng.nextInt
@@ -42,14 +44,6 @@ object RNG {
     (d1, d2, d3) -> rng3
   }
 
-  // ex 3
-  def double32(rng: RNG): ((Double, Double, Double), RNG) = {
-    val (d1, rng1) = RNG.double(rng)
-    val (d2, rng2) = RNG.double(rng1)
-    val (d3, rng3) = RNG.double(rng2)
-    (d1, d2, d3) -> rng3
-  }
-
   // ex 4
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
     def go(c: Int, r: RNG, acc: List[Int] = Nil): (List[Int], RNG) = {
@@ -61,6 +55,16 @@ object RNG {
     }
     go(count, rng)
   }
+
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
+
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = rng => {
+    val (a, rng2) = s(rng)
+    (f(a), rng2)
+  }
+
+  //ex 5
+  def doubleViaMap(rng: RNG): (Double, RNG) = ???
 
 }
 
