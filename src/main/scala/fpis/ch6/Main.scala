@@ -2,10 +2,12 @@ package fpis.ch6
 
 object Main extends App {
 
-  assert(RNG.nonNegativeInt(Simple(0))._1 >= 0)
+  import RNG._
 
-  assert(RNG.double(Simple(0))._1 >= 0D)
-  assert(RNG.double(Simple(0))._1 < 1D)
+  assert(nonNegativeInt(Simple(0))._1 >= 0)
+
+  assert(double(Simple(0))._1 >= 0D)
+  assert(double(Simple(0))._1 < 1D)
 
   def linear(start: Int): RNG = new RNG {
     def nextInt = start -> new RNG {
@@ -13,8 +15,9 @@ object Main extends App {
     }
   }
 
-  println(RNG.ints(5)(linear(1))._1)
-  assert(RNG.ints(5)(linear(1))._1 == List(5, 4, 3, 2, 1))
+  assert(ints(5)(linear(1))._1 == List(5, 4, 3, 2, 1))
 
+  // ex 7
+  assert(sequence(List(unit(1), unit(2), unit(3)))(Simple(0))._1 == List(1, 2, 3))
 
 }

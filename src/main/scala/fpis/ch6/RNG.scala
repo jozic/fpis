@@ -68,6 +68,33 @@ object RNG {
     i.toDouble / Int.MaxValue + 1
   }
 
+  //ex 6
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
+    val (a, rng2) = ra(rng)
+    val (b, rng3) = rb(rng2)
+    f(a, b) -> rng
+  }
+
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] = map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(nonNegativeInt, double)
+  val randDoubleInt: Rand[(Double, Int)] = both(double, nonNegativeInt)
+
+  // ex 7 (hard)
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = rng => {
+    fs.foldRight((List.empty[A], rng)) {
+      case (rand, (acc, anRng)) =>
+        val (a, newRng) = rand(anRng)
+        (a :: acc) -> newRng
+    }
+  }
+
+  // ex 7 (hard)
+  def sequenceViaMap2[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List.empty[A])) { (rand, accRand) =>
+      map2(rand, accRand)(_ :: _)
+    }
+
 }
 
 case class Simple(seed: Long) extends RNG {
