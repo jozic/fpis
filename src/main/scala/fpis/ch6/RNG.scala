@@ -95,6 +95,36 @@ object RNG {
       map2(rand, accRand)(_ :: _)
     }
 
+  // ex 8
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+    val (a, rng2) = f(rng)
+    g(a)(rng2)
+  }
+
+  // ex 8
+  def nonNegativeLessThan(n: Int): Rand[Int] = flatMap(nonNegativeInt) { i =>
+    val mod = i % n
+    if (i + (n - 1) - mod >= 0) unit(mod) else nonNegativeLessThan(n)
+  }
+
+  // ex 9
+  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = flatMap(s) { a => unit(f(a)) }
+
+  // ex 9
+  def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra) { a =>
+      flatMap(rb) { b =>
+        unit(f(a, b))
+      }
+    }
+
+  // ex 9
+  def map2ViaFlatMapAndMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra) { a =>
+      map(rb) { b =>
+        f(a, b)
+      }
+    }
 }
 
 case class Simple(seed: Long) extends RNG {
