@@ -61,6 +61,21 @@ object Par {
     override def call() = a(es).get
   })
 
+  // ex 4
+  def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
+
+  def map[A, B](pa: Par[A])(f: A => B): Par[B] =
+    map2(pa, unit(()))((a, _) => f(a))
+
+  // ex 5
+  def sequence[A](l: List[Par[A]]): Par[List[A]] =
+    l.foldRight(unit(List.empty[A]))(map2(_, _)(_ :: _))
+
+  def parMap[A, B](l: List[A])(f: A => B): Par[List[B]] = fork {
+    sequence(l.map(a => asyncF(f)(a)))
+  }
+
+
   def sum(ints: IndexedSeq[Int]): Par[Int] =
     if (ints.size <= 1)
       Par.unit(ints.headOption getOrElse 0)
