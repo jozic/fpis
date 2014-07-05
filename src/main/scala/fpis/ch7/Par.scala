@@ -80,7 +80,6 @@ object Par {
     sequence(l.withFilter(f).map(asyncF[A, A](identity)(_)))
   }
 
-
   def sum(ints: IndexedSeq[Int]): Par[Int] =
     if (ints.size <= 1)
       Par.unit(ints.headOption getOrElse 0)
@@ -107,5 +106,8 @@ object Par {
   def count(paragraphs: List[String]): Par[Int] =
     parFold(paragraphs.toIndexedSeq)(0, _.split(" ").size, _ + _)
 
+
+  def equal[A](es: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
+    p(es).get == p2(es).get
 
 }
