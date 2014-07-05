@@ -75,6 +75,11 @@ object Par {
     sequence(l.map(a => asyncF(f)(a)))
   }
 
+  // ex 6
+  def parFilter[A](l: List[A])(f: A => Boolean): Par[List[A]] = fork {
+    sequence(l.withFilter(f).map(asyncF[A, A](identity)(_)))
+  }
+
 
   def sum(ints: IndexedSeq[Int]): Par[Int] =
     if (ints.size <= 1)
@@ -83,6 +88,24 @@ object Par {
       val (l, r) = ints.splitAt(ints.length / 2)
       Par.map22(Par.fork(sum(l)), Par.fork(sum(r)))(_ + _)
     }
+
+  def parFold[A, B](seq: IndexedSeq[A])(ifEmpty: => B, f: A => B, rd: (B, B) => B): Par[B] =
+    if (seq.size <= 1)
+      Par.unit(seq.headOption.fold(ifEmpty)(f))
+    else {
+      val (l, r) = seq.splitAt(seq.length / 2)
+      Par.map22(Par.fork(parFold(l)(ifEmpty, f, rd)), Par.fork(parFold(r)(ifEmpty, f, rd)))(rd)
+    }
+
+  def parReduce[A](seq: IndexedSeq[A])(ifEmpty: => A, rd: (A, A) => A): Par[A] =
+    parFold(seq)(ifEmpty, identity[A], rd)
+
+  def sum2(ints: IndexedSeq[Int]): Par[Int] = parReduce(ints)(0, _ + _)
+
+  def max(ints: IndexedSeq[Int]): Par[Int] = parReduce(ints)(???, math.max)
+
+  def count(paragraphs: List[String]): Par[Int] =
+    parFold(paragraphs.toIndexedSeq)(0, _.split(" ").size, _ + _)
 
 
 }
