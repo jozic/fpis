@@ -14,6 +14,26 @@ object Par {
     def cancel(evenIfRunning: Boolean): Boolean = false
   }
 
+  private case class BinaryFuture[A, B, C](f1: Future[A], f2: Future[B])
+                                          (f: (A, B) => C) extends Future[C] {
+    private val futures = List(f1, f2)
+
+    override def isDone = futures.forall(_.isDone)
+
+    override def cancel(mayInterruptIfRunning: Boolean) = futures.exists(_.cancel(mayInterruptIfRunning))
+
+    override def isCancelled = futures.exists(_.isCancelled)
+
+    override def get() = get(Long.MaxValue, TimeUnit.DAYS)
+
+    override def get(timeout: Long, unit: TimeUnit): C = {
+      val timeoutInMillis = unit.convert(timeout, TimeUnit.MILLISECONDS)
+      val deadline = timeoutInMillis + System.currentTimeMillis()
+      val a = f1.get(timeoutInMillis, TimeUnit.MILLISECONDS)
+      val b = f2.get(deadline - System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+      f(a, b)
+    }
+  }
 
   type Par[A] = ExecutorService => Future[A]
 
@@ -30,6 +50,13 @@ object Par {
     UnitFuture(f(f1.get, f2.get))
   }
 
+  // ex 3 (hard, optional)
+  def map22[A, B, C](p1: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] = es => {
+    val f1: Future[A] = p1(es)
+    val f2: Future[B] = p2(es)
+    BinaryFuture(f1, f2)(f)
+  }
+
   def fork[A](a: => Par[A]): Par[A] = es => es.submit(new Callable[A] {
     override def call() = a(es).get
   })
@@ -39,7 +66,7 @@ object Par {
       Par.unit(ints.headOption getOrElse 0)
     else {
       val (l, r) = ints.splitAt(ints.length / 2)
-      Par.map2(Par.fork(sum(l)), Par.fork(sum(r)))(_ + _)
+      Par.map22(Par.fork(sum(l)), Par.fork(sum(r)))(_ + _)
     }
 
 
