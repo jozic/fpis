@@ -127,10 +127,20 @@ object Par {
 
   // ex 13
   def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-    chooser(cond)(b => if (b) t else f)
+    flatMap(cond)(b => if (b) t else f)
 
   // ex 13
   def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
-    chooser(n)(choices.apply)
+    flatMap(n)(choices.apply)
+
+  // ex 14
+  def join[A](a: Par[Par[A]]): Par[A] = es => a(es).get()(es)
+
+  // ex 14
+  def flatMap[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = join(map(pa)(choices))
+
+  // ex 14
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = flatMap(a)(identity)
+
 
 }
