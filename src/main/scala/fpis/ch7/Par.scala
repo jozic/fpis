@@ -110,4 +110,27 @@ object Par {
   def equal[A](es: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
     p(es).get == p2(es).get
 
+  def delay[A](fa: => Par[A]): Par[A] = es => fa(es)
+
+  // ex 11
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = es => {
+    choices(n(es).get())(es)
+  }
+
+  def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    choiceN[A](map(cond) { b => if (b) 0 else 1})(List(t, f))
+
+  // ex 13
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = es => {
+    choices(pa(es).get())(es)
+  }
+
+  // ex 13
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    chooser(cond)(b => if (b) t else f)
+
+  // ex 13
+  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    chooser(n)(choices.apply)
+
 }

@@ -1,6 +1,6 @@
 package fpis.ch7
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{Executors, TimeUnit, TimeoutException}
 
 object Main extends App {
 
@@ -27,5 +27,17 @@ object Main extends App {
   ), 12))
 
   es.shutdownNow()
+
+
+  val es1 = Executors.newSingleThreadExecutor()
+
+  try {
+    assert(sum2(Vector(1, 2, 3, 4, 5, 6))(es1).get(1, TimeUnit.SECONDS) == 21)
+    assert(1 == 0, "never happens")
+  } catch {
+    case _: TimeoutException => println("alas")
+  }
+
+  es1.shutdownNow()
 
 }
