@@ -1,6 +1,6 @@
 package fpis.ch8
 
-import fpis.ch6.Simple
+import fpis.ch6.{RNG, Simple}
 
 trait Prop {
   def check: Boolean
@@ -24,13 +24,16 @@ object Main extends App {
   //  sum(l) == l.headOption.getOrElse(0) * l.size
   //}
 
+  implicit val rng = Simple(0)
+
+  def generate[A](g: Gen[A])(implicit r: RNG) = g.sample.run(r)
+
   {
-    val (fiveToEleven, _) = Gen.chooseRecursive(5, 12).sample.run(Simple(0))
+    val (fiveToEleven, _) = generate(Gen.choose(5, 12))
     assert(fiveToEleven >= 5 && fiveToEleven < 12)
   }
-  {
-    val (fiveToEleven, _) = Gen.choose(5, 12).sample.run(Simple(0))
-    assert(fiveToEleven >= 5 && fiveToEleven < 12)
-  }
+
+  val (xs, _) = generate(Gen.listOfN[Boolean](23, Gen.boolean))
+  assert(xs.size == 23)
 
 }
