@@ -5,7 +5,17 @@ import fpis.ch6.{RNG, State}
 import scala.annotation.tailrec
 
 
-case class Gen[A](sample: State[RNG, A])
+case class Gen[A](sample: State[RNG, A]) {
+
+  // ex 6
+  def flatMap[B](f: A => Gen[B]): Gen[B] =
+    Gen(sample.flatMap(a => f(a).sample))
+
+  // ex 6
+  def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap {
+    sz => Gen.listOfN(sz, this)
+  }
+}
 
 object Gen {
   // ex 4
@@ -32,5 +42,16 @@ object Gen {
 
   // ex 5
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
+
+  // playing
+  def option[A](gen: Gen[A]): Gen[Option[A]] = Gen(boolean.sample.flatMap {
+    b => if (b) gen.sample.map(s => Option(s)) else State.unit(Option.empty[A])
+  })
+
+  // ex 7
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = boolean.flatMap { b =>
+    if (b) g1 else g2
+  }
+
 
 }
