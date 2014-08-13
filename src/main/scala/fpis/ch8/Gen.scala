@@ -4,7 +4,6 @@ import fpis.ch6.{RNG, State}
 
 import scala.annotation.tailrec
 
-
 case class Gen[A](sample: State[RNG, A]) {
 
   // ex 6
@@ -15,6 +14,8 @@ case class Gen[A](sample: State[RNG, A]) {
   def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap {
     sz => Gen.listOfN(sz, this)
   }
+
+  def apply(rng: RNG): A = sample.run(rng)._1
 }
 
 object Gen {
@@ -51,6 +52,11 @@ object Gen {
   // ex 7
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = boolean.flatMap { b =>
     if (b) g1 else g2
+  }
+
+  // ex 8 (assuming g1._2 + g2._2 = 1.0)
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = Gen(State(RNG.double)).flatMap { d =>
+    if (d <= g1._2) g1._1 else g2._1
   }
 
 
