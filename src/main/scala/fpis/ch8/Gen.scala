@@ -59,5 +59,9 @@ object Gen {
     if (d <= g1._2) g1._1 else g2._1
   }
 
+  def randomStream[A](as: Gen[A], upto: Int = 100): Gen[Stream[A]] =
+    as.listOfN(Gen.choose(1, upto)).flatMap { l =>
+      Gen.unit(l.toStream)
+    }
 
 }
