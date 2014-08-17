@@ -114,6 +114,9 @@ sealed trait Stream[+A] {
     }
   }
 
+  def find(p: A => Boolean): Option[A] =
+    filter(p).headOption
+
   // ex 15 - better
   def tails: Stream[Stream[A]] = {
     Stream.unfold[Stream[A], Stream[A]](this) {

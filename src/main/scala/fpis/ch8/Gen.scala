@@ -2,9 +2,11 @@ package fpis.ch8
 
 import fpis.ch6.{RNG, State}
 
+import fpis.ch5.Stream
+
 import scala.annotation.tailrec
 
-case class Gen[A](sample: State[RNG, A]) {
+case class Gen[+A](sample: State[RNG, A]) {
 
   // ex 6
   def flatMap[B](f: A => Gen[B]): Gen[B] =
@@ -16,6 +18,10 @@ case class Gen[A](sample: State[RNG, A]) {
   }
 
   def apply(rng: RNG): A = sample.run(rng)._1
+
+  // ex 10
+  def unsized: SGen[A] = SGen(_ => this)
+
 }
 
 object Gen {
@@ -59,9 +65,23 @@ object Gen {
     if (d <= g1._2) g1._1 else g2._1
   }
 
-  def randomStream[A](as: Gen[A], upto: Int = 100): Gen[Stream[A]] =
-    as.listOfN(Gen.choose(1, upto)).flatMap { l =>
-      Gen.unit(l.toStream)
-    }
+}
+
+case class SGen[+A](forSize: Int => Gen[A]) {
+
 
 }
+
+object SGen {
+  // ex 12
+  def listOf[A](g: Gen[A]): SGen[List[A]] = SGen { n =>
+    g.listOfN(Gen.unit(n))
+  }
+
+  // ex 13
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen { n =>
+    g.listOfN(Gen.unit(n max 1))
+  }
+
+}
+
