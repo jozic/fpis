@@ -17,7 +17,10 @@ trait Parsers[ParseError, Parser[+ _]] {
       Prop.forAll(in)(s => run(succeed(1))(s) == Right(1))
 
     // ex 2
-    def productLaw[A](p: Parser[A])(in: Gen[String]): Prop
+    def productLaw[A](p: Parser[A])(in: Gen[String]): Prop = {
+      equal(p ** succeed(1), p)(in)
+      equal(succeed(1) ** p, p)(in)
+    }
   }
 
 
@@ -27,14 +30,15 @@ trait Parsers[ParseError, Parser[+ _]] {
 
   implicit def string(s: String): Parser[String]
 
-
   def succeed[A](a: A): Parser[A] = string("").map(_ => a)
 
   def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
 
   def product[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)]
 
-  def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]]
+  // ex 4
+  def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] =
+    if (n <= 0) succeed(List()) else map2(p, listOfN(n - 1, p))(_ :: _)
 
   def zeroChars(c: Char): Parser[Int]
 
@@ -47,21 +51,19 @@ trait Parsers[ParseError, Parser[+ _]] {
   def zeroOrMoreFollowedByOneOrMoreChars(c1: Char, c2: Char): Parser[(Int, Int)] =
     product(zeroOrMoreChars(c1), oneOrMoreChars(c2))
 
-  def many[A](p: Parser[A]): Parser[List[A]]
+  // ex 3
+  def many[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _) | succeed(List.empty[A])
 
-  def many1[A](p: Parser[A]): Parser[List[A]]
+  // ex 1
+  def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, p.many)(_ :: _)
 
   def map[A, B](a: Parser[A])(f: A => B): Parser[B]
-
-  def flatMap[A, B](a: Parser[A])(f: A => Parser[B]): Parser[B]
 
   def slice[A](p: Parser[A]): Parser[String]
 
   // ex 1
   def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] =
-    p.flatMap(a => p2.map(b => f(a, b)))
-
-  //  implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = f(a)
+    (p ** p2).map { case (a, b) => f(a, b) }
 
   implicit def asParser[A, B](a: A)(implicit f: A => Parser[B]): ParserOps[B] = f(a)
 
@@ -70,7 +72,7 @@ trait Parsers[ParseError, Parser[+ _]] {
 
     def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
-    def **[B](p2: Parser[B]) = self.product(p, p2)
+    def **[B](p2: Parser[B]): Parser[(A, B)] = self.product(p, p2)
 
     def product[B](p2: Parser[B]) = self.product(p, p2)
 
@@ -80,9 +82,7 @@ trait Parsers[ParseError, Parser[+ _]] {
 
     def map[B](f: A => B): Parser[B] = self.map(p)(f)
 
-    def map2[B, C](p2: Parser[B])(f: (A, B) => C): Parser[C] = self.map2(p)(f)
-
-    def flatMap[B](f: A => Parser[B]): Parser[B] = self.flatMap(p)(f)
+    def map2[B, C](p2: Parser[B])(f: (A, B) => C): Parser[C] = self.map2(p, p2)(f)
 
     def slice = self.slice(p)
   }
