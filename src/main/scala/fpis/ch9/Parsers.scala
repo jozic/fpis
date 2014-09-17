@@ -37,15 +37,21 @@ trait Parsers[ParseError, Parser[+ _]] {
   // ex 6
   def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
 
-  def map[A, B](a: Parser[A])(f: A => B): Parser[B]
-
   def slice[A](p: Parser[A]): Parser[String]
 
   def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
 
-  def product[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)]
-
   //derived
+
+    // ex 8
+  def map[A, B](a: Parser[A])(f: A => B): Parser[B] =
+    a.flatMap(a => succeed(f(a)))
+
+  // ex 7
+  def product[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)] = for {
+    a <- p1
+    b <- p2
+  } yield a -> b
 
   def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
 
@@ -68,10 +74,13 @@ trait Parsers[ParseError, Parser[+ _]] {
   // ex 1
   def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, p.many)(_ :: _)
 
-  // ex 1
-  def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] =
-    (p ** p2).map { case (a, b) => f(a, b)}
+  // ex 1, ex 7
+  def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] = for {
+    a <- p
+    b <- p2
+  } yield f(a, b)
 
+  // ex 6
   def digitFollowedByChars(n: Int, c: Char): Parser[String] = regex("\\d".r).flatMap{ digit =>
     listOfN(digit.toInt, char(c)).map(_.mkString)
 
