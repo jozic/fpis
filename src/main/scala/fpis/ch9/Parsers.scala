@@ -43,7 +43,7 @@ trait Parsers[ParseError, Parser[+ _]] {
 
   //derived
 
-    // ex 8
+  // ex 8
   def map[A, B](a: Parser[A])(f: A => B): Parser[B] =
     a.flatMap(a => succeed(f(a)))
 
@@ -80,8 +80,12 @@ trait Parsers[ParseError, Parser[+ _]] {
     b <- p2
   } yield f(a, b)
 
+  def take1[A, B](p1: Parser[A], p2: Parser[B]): Parser[A] = map2(p1, p2)((a, _) => a)
+
+  def take2[A, B](p1: Parser[A], p2: Parser[B]): Parser[B] = map2(p1, p2)((_, b => b)
+
   // ex 6
-  def digitFollowedByChars(n: Int, c: Char): Parser[String] = regex("\\d".r).flatMap{ digit =>
+  def digitFollowedByChars(n: Int, c: Char): Parser[String] = regex("\\d".r).flatMap { digit =>
     listOfN(digit.toInt, char(c)).map(_.mkString)
 
   }
@@ -94,6 +98,10 @@ trait Parsers[ParseError, Parser[+ _]] {
     def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
     def **[B](p2: Parser[B]): Parser[(A, B)] = self.product(p, p2)
+
+    def take1[B](p2: Parser[B]): Parser[A] = self.take1(p, p2)
+
+    def take2[B](p2: Parser[B]): Parser[B] = self.take2(p, p2)
 
     def product[B](p2: Parser[B]) = self.product(p, p2)
 
