@@ -2,8 +2,6 @@ package fpis.ch8
 
 import fpis.ch6.{RNG, State}
 
-import fpis.ch5.Stream
-
 import scala.annotation.tailrec
 
 case class Gen[+A](sample: State[RNG, A]) {
@@ -11,6 +9,8 @@ case class Gen[+A](sample: State[RNG, A]) {
   // ex 6
   def flatMap[B](f: A => Gen[B]): Gen[B] =
     Gen(sample.flatMap(a => f(a).sample))
+
+  def map[B](f: A => B): Gen[B] = flatMap(a => Gen.unit(f(a)))
 
   // ex 6
   def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap {
@@ -49,6 +49,9 @@ object Gen {
 
   // ex 5
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
+
+  def triple[A](g: Gen[A]): Gen[(A, A, A)] =
+    g.flatMap(a1 => g.flatMap(a2 => g.map(a3 => (a1, a2, a3))))
 
   // playing
   def option[A](gen: Gen[A]): Gen[Option[A]] = Gen(boolean.sample.flatMap {

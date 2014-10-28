@@ -88,7 +88,7 @@ trait Parsers[ParseError, Parser[+ _]] {
 
   implicit def asParser[A, B](a: A)(implicit f: A => Parser[B]): ParserOps[B] = f(a)
 
-  implicit case class ParserOps[A](p: Parser[A]) extends AnyVal {
+  implicit class ParserOps[A](p: Parser[A]) {
     def |[B >: A](p2: Parser[B]): Parser[B] = self.or(p, p2)
 
     def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
