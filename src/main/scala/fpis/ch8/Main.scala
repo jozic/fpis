@@ -2,7 +2,7 @@ package fpis.ch8
 
 import fpis.ch5.Stream
 import fpis.ch6.{RNG, Simple}
-import fpis.ch8.Prop.{MaxSize, FailedCase, SuccessCount, TestCases}
+import fpis.ch8.Prop.{FailedCase, MaxSize, SuccessCount, TestCases}
 
 
 sealed trait Result {
@@ -79,20 +79,23 @@ object Prop {
   }
 
   def randomStream[A](as: Gen[A])(rng: RNG): Stream[A] =
-    Stream.unfold(rng) { rng => Some(as.sample.run(rng)) }
+    Stream.unfold(rng) { rng => Some(as.sample.run(rng))}
 
 
   def buildMsg[A](s: A, e: Exception): String =
     s"test case: $s\n" +
-      s"generated an exception: ${e.getMessage }\n" +
-      s"stack trace:\n ${e.getStackTrace.mkString("\n") }"
+      s"generated an exception: ${e.getMessage}\n" +
+      s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 
-  def run(p: Prop, maxSize: Int = 100, testCases: Int = 100, rng: RNG = Simple(System.currentTimeMillis)): Unit =
+  def run(p: Prop, maxSize: Int = 100,
+          testCases: Int = 100,
+          rng: RNG = Simple(System.currentTimeMillis),
+          label: String = ""): Unit =
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) =>
-        println(s"! Falsified after $n passed tests:\n $msg")
+        println(s"! $label falsified after $n passed tests:\n $msg")
       case Passed =>
-        println(s"+ OK, passed $testCases tests.")
+        println(s"+ OK, $label passed $testCases tests.")
     }
 
 
